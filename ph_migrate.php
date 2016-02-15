@@ -29,6 +29,7 @@ require('migrations/ph_field_mapping.php');
 require('migrations/ph_migration.php');
 
 require('field_handlers/post_meta_field_handler.php');
+require('field_handlers/user_meta_field_handler.php');
 require('field_handlers/post_attachment_field_handler.php');
 require('field_handlers/post_category_field_handler.php');
 

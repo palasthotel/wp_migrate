@@ -7,6 +7,10 @@ class ph_migration
 	public $source;
 	public $mappings;
 
+	public function addSimpleMapping($field){
+		return $this->addFieldMapping($field, $field);
+	}
+
 	public function addFieldMapping($sourcefield, $destfield)
 	{
 		if ( $this->mappings == null ) {
@@ -19,7 +23,7 @@ class ph_migration
 
 	public function removeFieldMapping($destfield)
 	{
-		unset($this->mappings[ $sourcefield ]);
+		unset($this->mappings[ $destfield ]);
 	}
 
 	public function map($source, $destination)

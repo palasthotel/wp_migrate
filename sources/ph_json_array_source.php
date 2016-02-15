@@ -2,7 +2,9 @@
 
 class ph_json_array_source extends ph_source
 {
-	public $file;
+	/**
+	 * @var array
+	 */
 	public $id_field_path;
 	public $json;
 	public $item_map;
@@ -12,21 +14,41 @@ class ph_json_array_source extends ph_source
 	{
 		$this->json = $json_array;
 		$this->id_field_path = array('id');
-		$fields = array();
+		$this->fields = array();
 	}
 
+	/**
+	 * @param $item array
+	 * @return mixed
+	 */
 	public function getItemID($item){
+		return $this->getPathValue($item, $this->id_field_path);
+	}
+
+	/**
+	 * @param $item array
+	 * @param $key_path array
+	 * @return mixed
+	 */
+	public function getPathValue($item, $key_path){
 		$tmp = $item;
-		foreach($this->id_field_path as $part){
+		foreach($key_path as $part){
 			$tmp = $tmp[$part];
 		}
 		return $tmp;
 	}
 
+	/**
+	 * @param $id_field_path array
+	 */
 	public function setIDFieldPath($id_field_path){
 		$this->id_field_path = $id_field_path;
 	}
 
+	/**
+	 * get ids
+	 * @return array
+	 */
 	public function getIDs()
 	{
 		$ids = array();
@@ -38,12 +60,26 @@ class ph_json_array_source extends ph_source
 		return $ids;
 	}
 
+	/**
+	 * build a row item
+	 * @param $id
+	 * @return \Stdclass
+	 */
 	public function getItemByID($id)
 	{
-		return $this->item_map[$id];
+		$item = $this->item_map[$id];
+		$row = new Stdclass();
+		foreach ( $this->fields as $fieldname => $key_path ) {
+			$value = $this->getPathValue($key_path);
+			$row->{$fieldname} = $value;
+		}
+		return $row;
 	}
 
-
+	/**
+	 * debug a item
+	 * @param $id
+	 */
 	public function describeID($id)
 	{
 		$item = $this->item_map[$id];
@@ -53,5 +89,15 @@ class ph_json_array_source extends ph_source
 			<?php var_dump($item);  ?>
 		</pre>
 		<?php
+	}
+
+	/**
+	 * set key path for a field
+	 * @param $fieldname string
+	 * @param $key_path array
+	 */
+	public function addField($fieldname, $key_path)
+	{
+		$this->fields[ $fieldname ] = $key_path;
 	}
 }
