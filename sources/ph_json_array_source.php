@@ -33,6 +33,7 @@ class ph_json_array_source extends ph_source
 	public function getPathValue($item, $key_path){
 		$tmp = $item;
 		foreach($key_path as $part){
+			if(empty($tmp[$part])) return "";
 			$tmp = $tmp[$part];
 		}
 		return $tmp;
@@ -70,7 +71,7 @@ class ph_json_array_source extends ph_source
 		$item = $this->item_map[$id];
 		$row = new Stdclass();
 		foreach ( $this->fields as $fieldname => $key_path ) {
-			$value = $this->getPathValue($key_path);
+			$value = $this->getPathValue($item,$key_path);
 			$row->{$fieldname} = $value;
 		}
 		return $row;
@@ -82,11 +83,16 @@ class ph_json_array_source extends ph_source
 	 */
 	public function describeID($id)
 	{
-		$item = $this->item_map[$id];
+		$this->getIDs();
+		$item = $this->getItemByID($id);
 		?>
-		<p>ID Field: <?php echo $this->id_field_path; ?> Item ID: <?php echo $id; ?></p>
+		<p>ID Field:Item ID: <?php echo $id; ?></p>
 		<pre>
-			<?php var_dump($item);  ?>
+			<?php
+			foreach($item as $field => $value){
+				echo "<p><strong>$field</strong>: $value</p>";
+			}
+			?>
 		</pre>
 		<?php
 	}

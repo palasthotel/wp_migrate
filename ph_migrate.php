@@ -71,7 +71,7 @@ function ph_migrate_statistics_increment($title,$delta)
 	}
 	else
 	{
-		$wpdb->query("update ".$wpdb->prefix."ph_migrate_statistics set value=value+".$delta." where token=".$ph_migrate_statistics_token." and title='".mysql_real_escape_string($title)."'");
+		$wpdb->query("update ".$wpdb->prefix."ph_migrate_statistics set value=value+".$delta." where token=".$ph_migrate_statistics_token." and title='".$wpdb->_real_escape($title)."'");
 	}
 }
 
