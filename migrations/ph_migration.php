@@ -82,7 +82,7 @@ class ph_migration
 		$table_name = $wpdb->prefix.'ph_migrate_map_'.$this->name;
 		$charset_collate = $wpdb->get_charset_collate();
 		$sql = "CREATE TABLE $table_name (
-		  source_id varchar(255) NOT NULL,
+		  source_id varchar(190) NOT NULL,
 		  dest_id bigint,
 		  needs_import bigint,
 		  PRIMARY KEY  (source_id)

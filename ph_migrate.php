@@ -23,6 +23,7 @@ require('sources/ph_source.php');
 require('sources/ph_xml_source.php');
 require('sources/ph_xml_list_source.php');
 require('sources/ph_placeholder_source.php');
+require('sources/ph_json_array_source.php');
 
 require('migrations/ph_field_mapping.php');
 require('migrations/ph_migration.php');
@@ -48,7 +49,7 @@ function ph_migrate_statistics_init()
 	$charset_collate = $wpdb->get_charset_collate();
 	$sql = "CREATE TABLE $table_name (
 	  token bigint NOT NULL,
-	  title varchar(255) NOT NULL,
+	  title varchar(190) NOT NULL,
 	  value bigint,
 	  PRIMARY KEY  (token,title)
 	) $charset_collate;";
@@ -337,6 +338,7 @@ function ph_migrate_lookup()
 <h1>Migrate Lookup</h1>
 <?php
 	$migrations = ph_migrate_migrations();
+
 if ( isset($_POST) ) {
 	$input = array();
 	if ( isset( $_POST['post_id'] ) ) {
@@ -392,6 +394,7 @@ if ( isset($_POST) ) {
 	<p>
 		Migration: <select name="migration">
 <?php
+
 foreach ( $migrations as $key => $value ) {
 ?>
 	<option value="<?php echo esc_html( $key ); ?>"><?php echo esc_html( $key );?></option>
