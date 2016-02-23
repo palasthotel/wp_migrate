@@ -1,6 +1,6 @@
 <?php
 
-class ph_mongodb_source extends ph_source
+class ph_mongodb_source extends ph_json_array_source
 {
 	/**
 	 * @var MongoDB
@@ -9,7 +9,7 @@ class ph_mongodb_source extends ph_source
 	/**
 	 * @var String
 	 */
-	public $cm;
+	public $cn;
 	/**
 	 * @var MongoCollection
 	 */
@@ -24,28 +24,38 @@ class ph_mongodb_source extends ph_source
 	 * @param $db MongoDB
 	 * @param $collection_name String
 	 */
-	public function __construct($db, $collection_name)
+	public function __construct( MongoDB $db, $collection_name)
 	{
 		$this->db = $db;
-		$this->cm = $collection_name;
+		$this->cn = $collection_name;
 		$this->collection = null;
-		$fields = array();
+		/**
+		 * empty array because we use mongodb as source
+		 */
+		parent::__construct([]);
 	}
 
 	private function getCollection(){
-		if($this->collection != null) {
-			$this->collection = new MongoCollection($this->db, $this->cm);
+		if($this->collection == null) {
+			$this->collection = new MongoCollection($this->db, $this->cn);
 		}
 		return $this->collection;
 	}
 
+	/**
+	 * @param MongoCursor $item
+	 * @return mixed
+	 */
+	public function getItemID($item) {
+		return $item->key();
+	}
+
 	public function getIDs()
 	{
-		$collection = $this->getCollection();
 		/**
 		 * @param $cursor MongoCursor
 		 */
-		$cursor = $collection->find();
+		$cursor = $this->getCollection()->find();
 		$ids = array();
 		while($cursor->hasNext()){
 			$cursor->next();
@@ -56,7 +66,10 @@ class ph_mongodb_source extends ph_source
 
 	public function getItemByID($id)
 	{
-		return $this->getCollection()->findOne( array('_id' => new MongoId($id)) );
+		$item = $this->getCollection()->findOne( array('_id' => new MongoId($id)) );
+		$item["_id"] = (string) $item["_id"];
+		$this->item_map[$id] = $item;
+		return parent::getItemByID($id);
 	}
 
 

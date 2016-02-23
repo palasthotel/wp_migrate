@@ -46,6 +46,35 @@ class ph_user_destination extends ph_destination
 
 	public function save($item)
 	{
+		global $ph_migrate_field_handlers;
+		$field_handlers = array();
+		$class=get_class( $this );
+		while( FALSE != $class )
+		{
+			if( isset( $ph_migrate_field_handlers[ $class ] ) )
+			{
+				$field_handlers=array_merge( $field_handlers, $ph_migrate_field_handlers[ $class ] );
+			}
+			$class = get_parent_class( $class );
+		}
+
+		$userprocess = array();
+		foreach ( $item as $property => $value ) {
+			$handled = false;
+			foreach ( $field_handlers as $key => $callback ) {
+				if ( 0 === strpos( $property,$key ) ) {
+					$handled = true;
+					if ( ! isset($userprocess[ $key ]) ) {
+						$userprocess[ $key ] = array( 'callback' => $callback, 'fields' => array() );
+					}
+					$userprocess[ $key ]['fields'][ $property ] = $value;
+				}
+			}
+			if ( ! $handled ) {
+				$post[ $property ] = $value;
+			}
+		}
+
 		if ( ! isset($item->ID) ) {
 			$userdata = array();
 			foreach($this->user_fields as $valid){
@@ -62,6 +91,13 @@ class ph_user_destination extends ph_destination
 			ph_migrate_statistics_increment("Users updated",1);
 		}
 		wp_update_user( $item );
+
+		$user = get_userdata($item->ID);
+		foreach ( $userprocess as $key => $dataset ) {
+			$callback = $dataset['callback'];
+			$callback($user,$dataset['fields']);
+		}
+
 		return $item->ID;
 	}
 
