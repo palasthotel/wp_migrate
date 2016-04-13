@@ -1,6 +1,8 @@
 <?php
 define( 'WP_MEMORY_LIMIT','2G' );
 
+require "do-not-event-think-about-mailing.php";
+
 $paths = explode( 'wp-content',__FILE__ );
 require_once( $paths[0] . 'wp-load.php' );
 
