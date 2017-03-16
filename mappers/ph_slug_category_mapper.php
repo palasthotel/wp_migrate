@@ -19,7 +19,7 @@ class ph_slug_category_mapper
 		if(!is_array($input) && $this->taxonomy!=NULL)
 		{
 			$searchby=$this->searchby;
-			$input=array($searchby=>$input,'taxonomy'=>$this->taxonomy);
+			$input=array($searchby=>htmlentities($input),'taxonomy'=>$this->taxonomy);
 		}
 		if(is_array($input))
 		{
@@ -54,16 +54,23 @@ class ph_slug_category_mapper
 			{
 				if(isset($input['slug']))
 				{
-					return wp_insert_term($input['slug'],$input['taxonomy']);
+					$result=wp_insert_term($input['slug'],$input['taxonomy']);
+                    return $result['term_id'];
 				}
 				else if(isset($input['name']))
 				{
-					return wp_insert_term($input['name'],$input['taxonomy']);
+					$result=wp_insert_term($input['name'],$input['taxonomy']);
+					if(!is_array($result)) {
+					    var_dump($input);
+					    var_dump($result);
+                    }
+                    return $result['term_id'];
 				}
 			}
 			else
 			{
-				return wp_insert_term($input);
+				$result=wp_insert_term($input,$this->taxonomy);
+                return $result['term_id'];
 			}
 		}
 		return null;

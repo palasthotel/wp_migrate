@@ -51,34 +51,40 @@ class ph_attachment_destination extends ph_destination
 		}
 		else
 		{
-			try {
-				$magic = new Imagick($post['path']);
-				$extension = pathinfo($post['path'],PATHINFO_EXTENSION);
-			} catch( Exception $e ) {
-				echo 'Exception: '.$e->getMessage();
-				$extension = "jpg";
-			}
-			$filename = basename($post['path']);
-			if( $extension == "" || $extension == NULL )
-			{
-				$info = $magic->identifyImage();
-				$compression = $info['compression'];
-				$info = pathinfo($post['path']);
-				$extension = "";
-				if($compression == "JPEG")
-				{
-					$extension="jpg";
-				}
-				else if($compression == "PNG")
-				{
-					$extension="png";
-				}
-				else if($compression == "GIF")
-				{
-					$extension="gif";
-				}
-				$filename = $info['filename'].".".$extension;
-			}
+  		$finfo = finfo_open(FILEINFO_MIME_TYPE);
+  		$mime_type = finfo_file($finfo, $post['path']);
+  		if( strpos($mime_type, "image") !== false ) {
+  			try {
+  				$magic = new Imagick($post['path']);
+  				$extension = pathinfo($post['path'],PATHINFO_EXTENSION);
+  			} catch( Exception $e ) {
+  				echo 'Exception: '.$e->getMessage();
+  				$extension = "jpg";
+  			}
+  			$filename = basename($post['path']);
+  			if( $extension == "" || $extension == NULL )
+  			{
+  				$info = $magic->identifyImage();
+  				$compression = $info['compression'];
+  				$info = pathinfo($post['path']);
+  				$extension = "";
+  				if($compression == "JPEG")
+  				{
+  					$extension="jpg";
+  				}
+  				else if($compression == "PNG")
+  				{
+  					$extension="png";
+  				}
+  				else if($compression == "GIF")
+  				{
+  					$extension = "gif";
+  				}
+  				$filename = $info['filename'].".".$extension;
+  			}
+  		} elseif( strpos($mime_type, "pdf") !== false ) {
+    		$filename = basename($post['path']);
+  		}
 			$tmp = tempnam( '/tmp','ph_migrate' );
 			$data = file_get_contents( $post['path'] );
 			file_put_contents( $tmp, $data );

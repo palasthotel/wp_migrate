@@ -38,12 +38,14 @@ import usage:
 	--limit=LIMIT - stop after processing LIMIT items
 	--skip=COUNT - skip first COUNT items and than start processing
 	--progress=COUNT - render progress after COUNT items
+	--log - enables debug output
 
 rollback usage:
 	migrator rollback MIGRATION [--progress=COUNT] [--idList=ID,ID,ID]
 	
 	--progress=COUNT - render progress after COUNT items
 	--idList=ID,Id,ID - rolls only the given source ids back.
+	--log - enables debug output
 <?php
 	return;
 }
@@ -59,16 +61,21 @@ if ( 'list' == $argv[1] ) {
 }
 
 if ( 'import' == $argv[1] && count( $argv ) >= 3 ) {
+  $beginn = microtime(true); 
 	$migration = $argv[2];
 	$update = false;
 	$idlist = array();
 	$limit = 0;
 	$skip = 0;
 	$progress = -1;
+	$log = false;
 	for ( $i = 3;$i < count( $argv );$i++ ) {
 		if ( $argv[ $i ] == '--update' ) {
 			$update = true;
 		}
+		if ( $argv[ $i ] == '--log' ) {
+		    $log = true;
+        }
 		if ( 0 === strpos( $argv[ $i ], '--idList=' ) ) {
 			$tmp = substr( $argv[ $i ], strlen( '--idList=' ) );
 			$idlist = explode( ',', $tmp );
@@ -83,13 +90,19 @@ if ( 'import' == $argv[1] && count( $argv ) >= 3 ) {
 			$progress = intval( substr( $argv[ $i ],strlen( '--progress=' ) ) );
 		}
 	}
-	ph_migrate_import( $migration,$update,$idlist,$skip,$limit,$progress );
+	ph_migrate_import( $migration,$update,$idlist,$skip,$limit,$progress,$log );
+	$dauer = microtime(true) - $beginn; 
+  echo "Migration time: $dauer seconds.\n\n";
 }
 if ( 'rollback' == $argv[1] && count( $argv ) >= 3 ) {
 	$migration = $argv[2];
 	$progress = -1;
 	$idlist=array();
+	$log=false;
 	for ( $i = 3;$i < count( $argv );$i++ ) {
+        if ( $argv[ $i ] == '--log' ) {
+            $log = true;
+        }
 		if ( 0 === strpos( $argv[ $i ],'--progress=' ) ) {
 			$progress = intval( substr( $argv[ $i ], strlen( '--progress=' ) ) );
 		}
@@ -98,7 +111,7 @@ if ( 'rollback' == $argv[1] && count( $argv ) >= 3 ) {
 			$idlist = explode( ',', $tmp );
 		}
 	}
-	ph_migrate_rollback( $migration,$progress,$idlist );
+	ph_migrate_rollback( $migration,$progress,$idlist,$log );
 }
 
 if ( 'test' == $argv[1] ) {

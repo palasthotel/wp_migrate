@@ -52,7 +52,7 @@ class ph_field_mapping
 	public function map($source, $destination)
 	{
 		$value = null;
-		if ( $this->staticValue != null ) {
+		if ( $this->staticValue !== null ) {
 			$value = $this->staticValue;
 		}
 		else if ( isset($source->{$this->sourcefield}) ) {
@@ -146,7 +146,7 @@ class ph_field_mapping
 		if ( $this->jointoken != null && is_array( $value ) ) {
 			$value = implode( $this->jointoken, $value );
 		}
-		if ( $value == null ) { return; }
+		if ( $value === null ) { return; }
 		if ($destination == null ) { echo "destination is empty!\n";return; }
 		$destination->{$this->destinationfield} = $value;
 	}

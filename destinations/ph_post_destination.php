@@ -56,7 +56,7 @@ class ph_post_destination extends ph_destination
 		}
 		else
 		{
-			$id = wp_insert_post( $post );
+			$id = wp_insert_post( $post);
 			$post['ID'] = $id;
 			if ( isset($post['post_format']) ) {
 				set_post_format( $post['ID'],$post['post_format'] );

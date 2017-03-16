@@ -11,13 +11,18 @@ require_once(ABSPATH . 'wp-admin/includes/media.php');
 require_once(ABSPATH . 'wp-admin/includes/file.php');
 require_once(ABSPATH . 'wp-admin/includes/image.php');
 
+require_once 'libs/PHP-CLI-Progress-Bar/ProgressBar/Manager.php';
+require_once 'libs/PHP-CLI-Progress-Bar/ProgressBar/Registry.php';
+
 
 require('destinations/ph_destination.php');
 require('destinations/ph_post_destination.php');
+require('destinations/ph_postmeta_destination.php');
 require('destinations/ph_category_destination.php');
 require('destinations/ph_user_destination.php');
 require('destinations/ph_tag_destination.php');
 require('destinations/ph_attachment_destination.php');
+require('destinations/ph_comment_destination.php');
 
 require('sources/ph_source.php');
 require('sources/ph_xml_source.php');
@@ -33,11 +38,22 @@ require('field_handlers/post_meta_field_handler.php');
 require('field_handlers/user_meta_field_handler.php');
 require('field_handlers/post_attachment_field_handler.php');
 require('field_handlers/post_category_field_handler.php');
+require('field_handlers/category_meta_field_handler.php');
 
 require('mappers/ph_slug_category_mapper.php');
 
 global $ph_migrate_statistics_token;
 global $ph_migrate_statistics_seen;
+global $ph_migrate_log_output;
+
+$ph_migrate_log_output=false;
+
+function ph_migrate_log($string) {
+    global $ph_migrate_log_output;
+    if($ph_migrate_log_output) {
+        echo $string;
+    }
+}
 
 function ph_migrate_statistics_init()
 {
@@ -90,8 +106,110 @@ function ph_migrate_migrations()
 	return $migration_objects;
 }
 
-function ph_migrate_import($migration, $update, $idlist, $skip, $limit, $progress)
+function ph_migrate_image_editors($editors) {
+
+    if(!class_exists('migrate_image_editor')) {
+        class migrate_image_editor extends WP_Image_Editor {
+
+            protected $path;
+            public function __construct($file)
+            {
+                parent::__construct($file);
+                $path=$file;
+            }
+
+
+            public function load()
+            {
+                // TODO: Implement load() method.
+            }
+
+            public function save($destfilename = null, $mime_type = null)
+            {
+                // TODO: Implement save() method.
+            }
+
+            public function resize($max_w, $max_h, $crop = false)
+            {
+                // TODO: Implement resize() method.
+            }
+
+            public function multi_resize($sizes)
+            {
+                $metadata=array();
+                foreach( $sizes as $size => $size_data) {
+                    if ( ! isset( $size_data['width'] ) && ! isset( $size_data['height'] ) ) {
+                        continue;
+                    }
+
+                    if ( ! isset( $size_data['width'] ) ) {
+                        $size_data['width'] = null;
+                    }
+                    if ( ! isset( $size_data['height'] ) ) {
+                        $size_data['height'] = null;
+                    }
+
+                    if ( ! isset( $size_data['crop'] ) ) {
+                        $size_data['crop'] = false;
+                    }
+                    $this->update_size($size_data['width'],$size_data['height']);
+                    list ($filename, $extension, $mime_type) = $this->get_output_format(null,null);
+                    if ( ! $filename )
+                        $filename = $this->generate_filename( null, null, $extension );
+                    $metadata[$size]=array(
+                        'path'=>$filename,
+                        'file'=>wp_basename($filename),
+                        'width' => $this->size['width'],
+                        'height' => $this->size['height'],
+                        'mime-type'=>$mime_type,
+                    );
+                }
+                return $metadata;
+            }
+
+            public function crop($src_x, $src_y, $src_w, $src_h, $dst_w = null, $dst_h = null, $src_abs = false)
+            {
+                // TODO: Implement crop() method.
+            }
+
+            public function rotate($angle)
+            {
+                // TODO: Implement rotate() method.
+            }
+
+            public function flip($horz, $vert)
+            {
+                // TODO: Implement flip() method.
+            }
+
+            public function stream($mime_type = null)
+            {
+                // TODO: Implement stream() method.
+            }
+
+            public static function test($args = array())
+            {
+                return true;
+            }
+
+            public static function supports_mime_type($mime_type)
+            {
+                return true;
+            }
+
+        }
+    }
+
+    return array('migrate_image_editor');
+
+}
+
+function ph_migrate_import($migration, $update, $idlist, $skip, $limit, $progress, $output_log=true)
 {
+    add_filter('wp_image_editors','ph_migrate_image_editors');
+
+    global $ph_migrate_log_output;
+    $ph_migrate_log_output=$output_log;
 	ph_migrate_statistics_init();
 	ini_set( 'memory_limit', '-1' );
 	do_action( 'ph_migrate_register_field_handlers' );
@@ -122,6 +240,7 @@ function ph_migrate_import($migration, $update, $idlist, $skip, $limit, $progres
 		$ids = array_splice( $ids, 0, $limit );
 	}
 	ph_migrate_statistics_increment("Sources to be migrated",count($ids));
+    $progressBar=new \ProgressBar\Manager(0,count($ids));
 	//step five: for each source id check wether migration is neccessary:
 	//           * using update
 	//           * checking wether it's already migrated
@@ -134,7 +253,7 @@ function ph_migrate_import($migration, $update, $idlist, $skip, $limit, $progres
 	$nIgnored = 0;
 	foreach ( $ids as $source_id ) {
 		ph_migrate_statistics_increment("Sources analyzed",1);
-		echo "ID: ".$source_id."\n";
+        ph_migrate_log("\nID: ".$source_id."\n");
 		ini_set( 'memory_limit', '-1' );
 		$entry = null;
 		foreach ( $mapping as $map_entry ) {
@@ -145,7 +264,7 @@ function ph_migrate_import($migration, $update, $idlist, $skip, $limit, $progres
 		}
 		if ( $entry == null || true == $entry->needs_import || $entry->dest_id == null || ($entry->dest_id != null && $update) ) {
 			if ( $entry == null ) {
-				$entry = new Stdclass();
+				$entry = new stdClass();
 				$entry->source_id = $source_id;
 				$entry->dest_id = null;
 				$entry->needs_import = true;
@@ -157,20 +276,20 @@ function ph_migrate_import($migration, $update, $idlist, $skip, $limit, $progres
 			if ( $data != null ) {
 				$destination = null;
 				if ( $entry->dest_id != null ) {
-					echo "fetching destination...".$entry->dest_id."\n";
+                    ph_migrate_log("\nfetching destination...".$entry->dest_id."\n");
 					$destination = $migration->destination->getItemByID( $entry->dest_id );
 				}
 				else
 				{
-					echo "creating destination...\n";
+                    ph_migrate_log("\ncreating destination...\n");
 					$destination = $migration->destination->createItem();
 				}
 				if($destination==null)
 				{
-					echo "unable to get destination!\n";
+                    ph_migrate_log("\nunable to get destination!\n");
 					if($migration->destination==null)
 					{
-						echo "migration destination is null!\n";
+                        ph_migrate_log("migration destination is null!\n");
 					}
 				}
 				else
@@ -181,7 +300,11 @@ function ph_migrate_import($migration, $update, $idlist, $skip, $limit, $progres
 					$entry->dest_id = $dest_id;
 					$entry->needs_import = false;
 					if ( isset($entry->is_new) ) {
-						$wpdb->insert( $wpdb->prefix.'ph_migrate_map_'.$migration->name, array( 'source_id' => $entry->source_id, 'dest_id' => $entry->dest_id, 'needs_import' => $entry->needs_import ) );
+						if($wpdb->insert( $wpdb->prefix.'ph_migrate_map_'.$migration->name, array( 'source_id' => $entry->source_id, 'dest_id' => $entry->dest_id, 'needs_import' => $entry->needs_import ) )===false) {
+							//this happens whenever we have generated a stub and are filliing it out on the same run. Self-referencing migrations...
+                            ph_migrate_log("\nwhoops. Updating.\n");
+							$wpdb->update( $wpdb->prefix.'ph_migrate_map_'.$migration->name,array( 'source_id' => $entry->source_id, 'dest_id' => $entry->dest_id, 'needs_import' => $entry->needs_import ),array( 'source_id' => $entry->source_id ) );
+						}
 					}
 					else
 					{
@@ -204,11 +327,12 @@ function ph_migrate_import($migration, $update, $idlist, $skip, $limit, $progres
 			ph_migrate_statistics_increment("Sources ignored",1);
 		}
 		if ( 0 == (($nImported + $nIgnored) % $progress) && $progress != -1 ) {
-			echo esc_html( "Migration progress: $nImported imported, $nIgnored skipped, ".(count( $ids ) -($nImported + $nIgnored))." remaining.\n" );
+			echo esc_html( "\nMigration progress: $nImported imported, $nIgnored skipped, ".(count( $ids ) -($nImported + $nIgnored))." remaining.\n" );
 		}
+        $progressBar->advance();
 	}
 	//step six: PROFIT
-	echo esc_html( "Migration result: $nImported imported, $nIgnored skipped.\n" );
+	echo esc_html( "\nMigration result: $nImported imported, $nIgnored skipped.\n" );
 }
 
 function ph_migrate_delete($migration)
@@ -252,8 +376,10 @@ function ph_migrate_delete($migration)
 	echo esc_html( "Deletion result: $nDeleted deleted.\n" );	
 }
 
-function ph_migrate_rollback($migration, $progress,$idlist)
+function ph_migrate_rollback($migration, $progress,$idlist,$output_log=true)
 {
+    global $ph_migrate_log_output;
+    $ph_migrate_log_output=$output_log;
 	ini_set( 'memory_limit', '-1' );
 
 	$migrations = ph_migrate_migrations();
@@ -262,6 +388,7 @@ function ph_migrate_rollback($migration, $progress,$idlist)
 	global $wpdb;
 	$mapping = $wpdb->get_results( 'select source_id,dest_id,needs_import from '.$wpdb->prefix.'ph_migrate_map_'.$migration->name );
 	$nDeleted = 0;
+	$progressBar=new \ProgressBar\Manager(0,count($mapping));
 	foreach ( $mapping as $item ) {
 		ini_set( 'memory_limit', '-1' );
 		if ( $item->dest_id != null && (count($idlist)==0 || in_array($item->source_id, $idlist)) ) {
@@ -270,13 +397,14 @@ function ph_migrate_rollback($migration, $progress,$idlist)
 				$migration->destination->deleteItem( $dest );
 				$nDeleted++;
 				if ( 0 == $nDeleted % $progress && $progress != -1 ) {
-					echo esc_html( "Rollback progress: $nDeleted deleted, ".(count( $mapping ) -$nDeleted)." remaining.\n" );
+					echo esc_html( "\nRollback progress: $nDeleted deleted, ".(count( $mapping ) -$nDeleted)." remaining.\n" );
 				}
 			}
 			$wpdb->query( 'update '.$wpdb->prefix.'ph_migrate_map_'.$migration->name." set dest_id=null, needs_import=null where source_id='".$item->source_id."'" );
 		}
+		$progressBar->advance();
 	}
-	echo esc_html( "Rollback result: $nDeleted deleted.\n" );
+	echo esc_html( "\nRollback result: $nDeleted deleted.\n" );
 }
 
 $ph_migrate_field_handlers = array();
@@ -285,6 +413,50 @@ function ph_migrate_register_field_handler($destination_class, $prefix, $callbac
 {
 	global $ph_migrate_field_handlers;
 	$ph_migrate_field_handlers[ $destination_class ][ $prefix ] = $callback;
+}
+
+function ph_migrate_get_field_handlers($class_object){
+	global $ph_migrate_field_handlers;
+	$field_handlers = array();
+	$class=get_class( $class_object );
+	while( FALSE != $class )
+	{
+		if( isset( $ph_migrate_field_handlers[ $class ] ) )
+		{
+			$field_handlers=array_merge( $field_handlers, $ph_migrate_field_handlers[ $class ] );
+		}
+		$class = get_parent_class( $class );
+	}
+	return $field_handlers;
+}
+
+/**
+ * collect process callbacks from field handles and store unhandled properties
+ *
+ * @param $migration_item object
+ * @param $field_handlers array
+ * @param $rest object unhandled properties go to rest object
+ *
+ * @return array
+ */
+function ph_migrate_get_process($migration_item, $field_handlers, &$rest){
+	$process = array();
+	foreach ( $migration_item as $property => $value ) {
+		$handled = false;
+		foreach ( $field_handlers as $key => $callback ) {
+			if ( 0 === strpos( $property,$key ) ) {
+				$handled = true;
+				if ( ! isset($process[ $key ]) ) {
+					$process[ $key ] = array( 'callback' => $callback, 'fields' => array() );
+				}
+				$process[ $key ]['fields'][ $property ] = $value;
+			}
+		}
+		if ( ! $handled ) {
+			$rest->{$property} = $value;
+		}
+	}
+	return $process;
 }
 
 function ph_migrate_admin_menu()
@@ -410,3 +582,7 @@ foreach ( $migrations as $key => $value ) {
 </div>
 <?php
 }
+
+// Meta box
+require_once "meta-box.php";
+new \Migrate\MetaBox();

@@ -29,7 +29,7 @@ class ph_xml_source extends ph_source
 	{
 		$content = file_get_contents( $this->path.'/'.$id.'.xml' );
 		$content = preg_replace( '/xmlns(:[^=]*)?="[^"]*"/um', '', $content );
-		$xml = simplexml_load_string( $content );
+		$xml = simplexml_load_string( $content,"SimpleXMLElement",LIBXML_NOCDATA );
 		$row = new Stdclass();
 		$row->ID = $id;
 		$row->xml = $xml;
