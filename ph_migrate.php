@@ -115,7 +115,8 @@ function ph_migrate_image_editors($editors) {
             public function __construct($file)
             {
                 parent::__construct($file);
-                $path=$file;
+
+                $this->path=$file;
             }
 
 
@@ -137,11 +138,13 @@ function ph_migrate_image_editors($editors) {
             public function multi_resize($sizes)
             {
                 $metadata=array();
+                $original=getimagesize($this->path);
+                $orig_width=$original[0];
+                $orig_height=$original[1];
                 foreach( $sizes as $size => $size_data) {
                     if ( ! isset( $size_data['width'] ) && ! isset( $size_data['height'] ) ) {
                         continue;
                     }
-
                     if ( ! isset( $size_data['width'] ) ) {
                         $size_data['width'] = null;
                     }
@@ -152,10 +155,17 @@ function ph_migrate_image_editors($editors) {
                     if ( ! isset( $size_data['crop'] ) ) {
                         $size_data['crop'] = false;
                     }
+                    if(image_resize_dimensions($original_width,$original_height,$size_data['width'],$size_data['height'],$size_data['crop'])===false) {
+                    	continue;
+                    }
                     $this->update_size($size_data['width'],$size_data['height']);
                     list ($filename, $extension, $mime_type) = $this->get_output_format(null,null);
                     if ( ! $filename )
                         $filename = $this->generate_filename( null, null, $extension );
+                    ph_migrate_log("Dummy Generation of $filename\n");
+                    if(file_exists($filename)) {
+                    	unlink($filename);
+                    }
                     $metadata[$size]=array(
                         'path'=>$filename,
                         'file'=>wp_basename($filename),

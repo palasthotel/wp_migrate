@@ -44,8 +44,14 @@ class ph_attachment_destination extends ph_destination
 		if ( isset($post['ID']) ) {
 			$path = get_attached_file( $post['ID'] );
 			copy( $post['path'], $path );
-			$attach_data = wp_generate_attachment_metadata( $id,$path );
-			wp_update_attachment_metadata( $id,$attach_data );
+			$attach_data = wp_generate_attachment_metadata( $post['ID'],$path );
+			foreach($attach_data['sizes'] as $size=>$size_data) {
+				$file=$size_data['path'];
+				if(file_exists($file)) {
+					unlink($file);
+				}
+			}
+			wp_update_attachment_metadata( $post['ID'],$attach_data );
 			$id = $post['ID'];
 			ph_migrate_statistics_increment("Attachments updated",1);
 		}
