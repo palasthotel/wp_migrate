@@ -11,7 +11,10 @@ class ph_source
 	
 	public function hasID($id)
 	{
-		$ids=$this->getIDs();
+		static $ids=null;
+		if($ids==null) {
+            $ids = $this->getIDs();
+        }
 		return in_array($id, $ids);
 	}
 

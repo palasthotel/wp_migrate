@@ -10,6 +10,8 @@ class ph_field_mapping
 	public $mapperClass;
 	public $jointoken;
 
+	static $migrations = null;
+
 	public function __construct($source, $dest)
 	{
 		$this->sourcefield = $source;
@@ -94,14 +96,17 @@ class ph_field_mapping
 			}
 		}
 		if ( $this->sourcemigration != null ) {
-			$migrations = ph_migrate_migrations();
+		    if(self::$migrations == null) {
+		        self::$migrations=ph_migrate_migrations();
+            }
 			if ( is_array( $value ) ) {
 				$new_values = array();
 				foreach ( $value as $src ) {
 					$found=false;
 					foreach($this->sourcemigration as $source)
 					{
-						$sourcemigration=$migrations[$source];
+					    /** @var ph_migration $sourcemigration */
+						$sourcemigration=self::$migrations[$source];
 						if($sourcemigration->source==null)
 						{
 							echo "$source Migration has no source set and is used as a sourceMigration! That's not allowed.\n";
@@ -125,7 +130,8 @@ class ph_field_mapping
 				$found=false;
 				foreach($this->sourcemigration as $source)
 				{
-					$sourcemigration=$migrations[$source];
+				    /** @var ph_migration $sourcemigration */
+					$sourcemigration=self::$migrations[$source];
 					if($sourcemigration->source==null)
 					{
 						echo "$source Migration has no source set and is used as a sourceMigration! That's not allowed.\n";

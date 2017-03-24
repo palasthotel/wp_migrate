@@ -77,7 +77,7 @@ class ph_comment_destination extends ph_destination {
     }
 
     function save_comment_field_handlers($item,$process) {
-        $comment=get_comment($item->ID);
+        $comment=$item;//get_comment($item->ID);
         foreach( $process as $key => $dataset ) {
             $callback = $dataset['callback'];
             $callback($comment,$dataset['fields']);
@@ -96,7 +96,7 @@ class ph_comment_destination extends ph_destination {
 
     public function deleteItem($item)
     {
-        wp_delete_comment($item->ID);
+        wp_delete_comment($item->ID,true);
     }
 
 

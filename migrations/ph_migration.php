@@ -45,25 +45,35 @@ class ph_migration
 
 	public function getDestinationIDForSourceID($source_id, $createIfNeeded = true)
 	{
-		$this->prepareTable();
-		global $wpdb;
-		$data = $wpdb->get_results( 'select source_id,dest_id,needs_import from '.$wpdb->prefix.'ph_migrate_map_'.$this->name." where source_id='".$source_id."'" );
-		if ( 0 == count( $data ) || $data[0]->dest_id == null ) {
+        $this->prepareTable();
+        global $wpdb;
+	    static $mapping = null;
+	    if($mapping == null) {
+            $input = $wpdb->get_results( 'select source_id,dest_id,needs_import from '.$wpdb->prefix.'ph_migrate_map_'.$this->name );
+            $mapping=array();
+            foreach($input as $map_entry) {
+                $mapping[$map_entry->source_id]=$map_entry;
+            }
+
+        }
+//		$data = $wpdb->get_results( 'select source_id,dest_id,needs_import from '.$wpdb->prefix.'ph_migrate_map_'.$this->name." where source_id='".$source_id."'" );
+		if ( !isset($mapping[$source_id]) || $mapping[$source_id]->dest_id == null ) {
 			if ( ! $createIfNeeded ) { return null; }
 			$source = $this->createStub( $source_id );
 			if ( $source == null ) { return null; }
 			$id = $this->destination->save( $source );
-			if ( 0 == count( $data ) ) {
+			if ( !isset($mapping[$source_id]) ) {
 				$wpdb->insert( $wpdb->prefix.'ph_migrate_map_'.$this->name,array( 'source_id' => $source_id, 'dest_id' => $id, 'needs_import' => true ) ); }
 			else
 			{
 				$wpdb->update( $wpdb->prefix.'ph_migrate_map_'.$this->name,array( 'source_id' => $source_id, 'dest_id' => $id, 'needs_import' => true ), array( 'source_id' => $source_id ) );
 			}
+			$mapping = null;
 			return $id;
 		}
 		else
 		{
-			return $data[0]->dest_id;
+			return $mapping[$source_id]->dest_id;
 		}
 	}
 

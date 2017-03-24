@@ -1,5 +1,6 @@
 <?php
 define( 'WP_MEMORY_LIMIT','2G' );
+define('DISABLE_WP_CRON', 'true');
 
 require "do-not-event-think-about-mailing.php";
 
@@ -112,6 +113,10 @@ if ( 'rollback' == $argv[1] && count( $argv ) >= 3 ) {
 		}
 	}
 	ph_migrate_rollback( $migration,$progress,$idlist,$log );
+}
+
+if ( 'fix_images' == $argv[1]) {
+    ph_migrate_fix_images();
 }
 
 if ( 'test' == $argv[1] ) {

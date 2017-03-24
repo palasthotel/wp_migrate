@@ -155,7 +155,7 @@ function ph_migrate_image_editors($editors) {
                     if ( ! isset( $size_data['crop'] ) ) {
                         $size_data['crop'] = false;
                     }
-                    if(image_resize_dimensions($original_width,$original_height,$size_data['width'],$size_data['height'],$size_data['crop'])===false) {
+                    if(image_resize_dimensions($orig_width,$orig_height,$size_data['width'],$size_data['height'],$size_data['crop'])===false) {
                     	continue;
                     }
                     $this->update_size($size_data['width'],$size_data['height']);
@@ -214,9 +214,29 @@ function ph_migrate_image_editors($editors) {
 
 }
 
+function ph_migrate_prevent_scheduling() {
+    return false;
+}
+
+function ph_migrate_fix_images() {
+    add_filter('schedule_event','ph_migrate_prevent_scheduling');
+    add_filter('wp_image_editors','ph_migrate_image_editors');
+    global $wpdb;
+    $posts=$wpdb->get_results('select ID from '.$wpdb->posts.' where post_type=\'attachment\'');
+    $progressBar = new \ProgressBar\Manager(0,count($posts));
+    foreach($posts as $post) {
+        $post_id=$post->ID;
+        $path = get_attached_file( $post_id );
+        $attach_data = wp_generate_attachment_metadata( $post_id,$path );
+        wp_update_attachment_metadata( $post_id,$attach_data );
+        $progressBar->advance();
+    }
+}
+
 function ph_migrate_import($migration, $update, $idlist, $skip, $limit, $progress, $output_log=true)
 {
     add_filter('wp_image_editors','ph_migrate_image_editors');
+    add_filter('schedule_event','ph_migrate_prevent_scheduling');
 
     global $ph_migrate_log_output;
     $ph_migrate_log_output=$output_log;
@@ -228,6 +248,10 @@ function ph_migrate_import($migration, $update, $idlist, $skip, $limit, $progres
 	//step one: fetch the mapping table as a backing store for all migration decisions
 	global $wpdb;
 	$mapping = $wpdb->get_results( 'select source_id,dest_id,needs_import from '.$wpdb->prefix.'ph_migrate_map_'.$migration->name );
+	$mapped_mapping=array();
+	foreach($mapping as $map_entry) {
+	    $mapped_mapping[$map_entry->source_id]=$map_entry;
+    }
 
 	//step two: fetch all source ids
 	$ids = $migration->source->getIDs();
@@ -266,12 +290,9 @@ function ph_migrate_import($migration, $update, $idlist, $skip, $limit, $progres
         ph_migrate_log("\nID: ".$source_id."\n");
 		ini_set( 'memory_limit', '-1' );
 		$entry = null;
-		foreach ( $mapping as $map_entry ) {
-			if ( $map_entry->source_id == $source_id ) {
-				$entry = $map_entry;
-				break;
-			}
-		}
+		if(isset($mapped_mapping[$source_id])) {
+		    $entry=$mapped_mapping[$source_id];
+        }
 		if ( $entry == null || true == $entry->needs_import || $entry->dest_id == null || ($entry->dest_id != null && $update) ) {
 			if ( $entry == null ) {
 				$entry = new stdClass();
@@ -280,6 +301,7 @@ function ph_migrate_import($migration, $update, $idlist, $skip, $limit, $progres
 				$entry->needs_import = true;
 				$entry->is_new = true;
 				$mapping[]=$entry;
+				$mapped_mapping[$entry->source_id]=$entry;
 			}
 			$data = $migration->source->getItemByID( $source_id );
 			$data = $migration->prepareRow( $data );

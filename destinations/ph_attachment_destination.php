@@ -100,9 +100,9 @@ class ph_attachment_destination extends ph_destination
 				'tmp_name' => $tmp,
 			);
 			$id = media_handle_sideload( $file_array,$post['parent'] );
-			$path = get_attached_file( $id );
-			$attach_data = wp_generate_attachment_metadata( $id,$path );
-			wp_update_attachment_metadata( $id,$attach_data );
+			//$path = get_attached_file( $id );
+			//$attach_data = wp_generate_attachment_metadata( $id,$path );
+			//wp_update_attachment_metadata( $id,$attach_data );
 			$new_post = (array) get_post( $id );
 			$post = array_merge( $new_post,$post );
 			ph_migrate_statistics_increment("Attachments created",1);
