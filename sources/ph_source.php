@@ -3,6 +3,7 @@
 class ph_source
 {
 	public $fields;
+	private $ids=null;
 
 	public function getIDs()
 	{
@@ -11,11 +12,10 @@ class ph_source
 	
 	public function hasID($id)
 	{
-		static $ids=null;
-		if($ids==null) {
-            $ids = $this->getIDs();
+		if($this->ids==null) {
+            $this->ids = $this->getIDs();
         }
-		return in_array($id, $ids);
+        return in_array($id,$this->ids);
 	}
 
 	public function getItemByID($id)
