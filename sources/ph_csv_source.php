@@ -68,14 +68,14 @@ class ph_csv_source extends ph_source
 	public function describeID($id)
 	{
 
-?>
+		?>
 		<p>Path: <?php echo esc_html( $this->file );?></p>
 		<p>ID: <?php echo $id; ?><br>
 			Content:
 		<pre>
-			<?php echo esc_html( $this->data[$id] );?>
+			<?php echo esc_html( print_r($this->data[$id]) );?>
 		</pre>
 		</p>
-<?php
+		<?php
 	}
 }
