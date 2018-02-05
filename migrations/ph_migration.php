@@ -90,7 +90,7 @@ class ph_migration
 		}
 	}
 
-	private function prepareTable()
+	public function prepareTable()
 	{
 		global $wpdb;
 		$table_name = $wpdb->prefix.'ph_migrate_map_'.$this->name;
