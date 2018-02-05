@@ -92,6 +92,9 @@ function ph_migrate_statistics_increment($title,$delta)
 	}
 }
 
+/**
+ * @return \ph_migration[]
+ */
 function ph_migrate_migrations()
 {
 	$migrations = array();
@@ -245,6 +248,7 @@ function ph_migrate_import($migration, $update, $idlist, $skip, $limit, $progres
 	do_action( 'ph_migrate_register_field_handlers' );
 	$migrations = ph_migrate_migrations();
 	$migration = $migrations[ $migration ];
+	$migration->prepareTable();
 	//step one: fetch the mapping table as a backing store for all migration decisions
 	global $wpdb;
 	$mapping = $wpdb->get_results( 'select source_id,dest_id,needs_import from '.$wpdb->prefix.'ph_migrate_map_'.$migration->name );
