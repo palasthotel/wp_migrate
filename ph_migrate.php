@@ -2,7 +2,7 @@
 /**
  * Plugin Name: PALASTHOTEL Migrate
  * Description: Provides an migration-friendly environment.
- * Version: 1.0
+ * Version: 1.0.1
  * Author: PALASTHOTEL (In Person: Enno Welbers)
  * License: GPL2
  */
