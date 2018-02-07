@@ -25,6 +25,7 @@ require('destinations/ph_attachment_destination.php');
 require('destinations/ph_comment_destination.php');
 
 require('sources/ph_source.php');
+require('sources/ph_wpdb_source.php');
 require('sources/ph_xml_source.php');
 require('sources/ph_xml_list_source.php');
 require('sources/ph_placeholder_source.php');
