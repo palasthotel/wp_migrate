@@ -20,6 +20,7 @@ require('destinations/ph_post_destination.php');
 require('destinations/ph_postmeta_destination.php');
 require('destinations/ph_category_destination.php');
 require('destinations/ph_user_destination.php');
+require('destinations/ph_usermeta_destination.php');
 require('destinations/ph_tag_destination.php');
 require('destinations/ph_attachment_destination.php');
 require('destinations/ph_comment_destination.php');
