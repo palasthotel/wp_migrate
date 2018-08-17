@@ -16,7 +16,13 @@ function ph_migrate_post_meta_handler($post, $fields)
 		$metas[ $prop ] = $value;
 	}
 	foreach ( $metas as $key => $value ) {
-		delete_post_meta( $post['ID'],$key );
-		add_post_meta( $post['ID'],$key,$value,true );
+		if (is_array($post)) {
+			delete_post_meta( $post['ID'], $key );
+			add_post_meta( $post['ID'], $key, $value, true );
+		} else {
+			// Sometimes we get an WP_Post object
+			delete_post_meta( $post->ID, $key );
+			add_post_meta( $post->ID, $key, $value, true );
+		}
 	}
 }
