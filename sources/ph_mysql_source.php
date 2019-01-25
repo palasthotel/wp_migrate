@@ -6,7 +6,7 @@
  * Time: 08:54
  */
 
-class ph_mysql_source {
+class ph_mysql_source extends ph_source {
 	/** @var \mysqli */
 	protected $connection;
 
