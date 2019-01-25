@@ -46,5 +46,15 @@ class ph_mysql_source {
 		return $row;
 	}
 
+	public function describeID($id)
+	{
+		$item = $this->getItemByID($id);
+		?>
+		<pre>
+			<?php var_dump($item);  ?>
+		</pre>
+		<?php
+	}
+
 
 }
