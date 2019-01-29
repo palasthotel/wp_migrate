@@ -43,6 +43,12 @@ class ph_migration
 		return null;
 	}
 
+	/**
+	 * @param $source_id
+	 * @param bool $createIfNeeded
+	 *
+	 * @return int|null
+	 */
 	public function getDestinationIDForSourceID($source_id, $createIfNeeded = true)
 	{
         $this->prepareTable();
