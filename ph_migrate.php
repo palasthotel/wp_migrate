@@ -16,6 +16,7 @@ require_once 'libs/PHP-CLI-Progress-Bar/ProgressBar/Registry.php';
 
 
 require('destinations/ph_destination.php');
+require('destinations/ph_wpdb_destination.php');
 require('destinations/ph_post_destination.php');
 require('destinations/ph_postmeta_destination.php');
 require('destinations/ph_term_destination.php');

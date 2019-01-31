@@ -14,6 +14,8 @@ class ph_mysql_source extends ph_source {
 
 	private $fetchquery;
 
+	const ID_PLACEHOLDER = '$__ID__$';
+
 	public function __construct(mysqli $connection, $idquery, $fetchquery) {
 		$this->connection = $connection;
 		$this->idquery = $idquery;
@@ -31,8 +33,8 @@ class ph_mysql_source extends ph_source {
 
 
 	public function getItemByID($id) {
-		if(stripos($this->fetchquery,'$__ID__$') !== false) {
-			$results = $this->connection->query(str_replace('$__ID__$',$id,$this->fetchquery));
+		if(stripos($this->fetchquery,self::ID_PLACEHOLDER) !== false) {
+			$results = $this->connection->query(str_replace(self::ID_PLACEHOLDER,$id,$this->fetchquery));
 		} else {
 			$results = $this->connection->query($this->fetchquery . $id);
 		}
