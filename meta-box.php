@@ -10,6 +10,9 @@ namespace Migrate;
 
 
 class MetaBox {
+
+	const FILTER_FOUND_META_BOX_INFO = "found_meta_box_info";
+
 	function __construct() {
 		add_action( 'add_meta_boxes', array( $this, 'add_meta_boxes' ), 10, 2 );
 	}
@@ -45,6 +48,9 @@ class MetaBox {
 				$migration->source->describeID( $source_id );
 			}
 		}
+		// handle info yourself
+		if(!$found)	$found = apply_filters(self::FILTER_FOUND_META_BOX_INFO, $found, $post);
+		// or nothing can be found
 		if(!$found){
 			echo "<p>Nothing found</p>";
 		}

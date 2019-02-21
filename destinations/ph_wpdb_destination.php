@@ -12,7 +12,7 @@ class ph_wpdb_destination extends ph_destination {
 	 * @param string $tablename
 	 * @param string $id_field
 	 */
-	public function __construct( string $tablename, $id_field ) {
+	public function __construct( $tablename, $id_field ) {
 		$this->tablename          = $tablename;
 		$this->id_field           = $id_field;
 	}
