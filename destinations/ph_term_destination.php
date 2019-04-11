@@ -49,6 +49,9 @@ class ph_term_destination extends ph_destination
             $id=$item->term_id;
         } else {
             $result=wp_insert_term($item->name,$item->taxonomy,(array)$item);
+            if(is_wp_error($result)){
+            	return NULL;
+            }
             $id=$result['term_id'];
             $item->ID=$id;
             $item->term_id=$id;
