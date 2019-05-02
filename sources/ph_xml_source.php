@@ -57,7 +57,12 @@ class ph_xml_source extends ph_source
 
 	public function describeID($id)
 	{
-		$content = file_get_contents( $this->path.'/'.$id.'.xml' );
+		$file = $this->path.'/'.$id.'.xml' ;
+		if(!is_file($file)) {
+			echo "<p>Keine Quelldatei gefunden. $file</p>";
+			return;
+		}
+		$content = file_get_contents( $file );
 		$content = preg_replace( '/xmlns(:[^=]*)?="[^"]*"/um', '', $content );
 		$xml = simplexml_load_string( $content );
 		$dom=new DOMDocument('1.0');
