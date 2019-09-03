@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugin Name: PALASTHOTEL Migrate
+ * Plugin Name: Migrate
  * Description: Provides an migration-friendly environment.
- * Version: 1.0.4
+ * Version: 2.0.0
  * Author: PALASTHOTEL (In Person: Enno Welbers, Edward Bock)
  * License: GPL2
  */
@@ -628,3 +628,13 @@ foreach ( $migrations as $key => $value ) {
 // Meta box
 require_once "meta-box.php";
 new \Migrate\MetaBox();
+
+if(php_sapi_name() === 'cli'){
+	// disable mailings
+	require_once dirname(__FILE__)."/do-not-event-think-about-mailing.php";
+}
+
+if ( defined( 'WP_CLI' ) && WP_CLI ) {
+	// add WP_CLI support
+	require_once dirname(__FILE__)."/classes/MigrateWPCli.php";
+}
