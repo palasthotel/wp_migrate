@@ -314,7 +314,7 @@ function ph_migrate_import($migration, $update, $idlist, $skip, $limit, $progres
 				$mapped_mapping[$entry->source_id]=$entry;
 			}
 			$data = $migration->source->getItemByID( $source_id );
-			$data = $migration->prepareRow( $data );
+			$data = $migration->prepareRow( $data, $source_id );
 			if ( $data != null ) {
 				$destination = null;
 				if ( $entry->dest_id != null ) {

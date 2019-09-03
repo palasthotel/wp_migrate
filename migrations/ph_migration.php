@@ -33,7 +33,7 @@ class ph_migration
 		}
 	}
 
-	public function prepareRow($row)
+	public function prepareRow($row, $source_id)
 	{
 		return $row;
 	}

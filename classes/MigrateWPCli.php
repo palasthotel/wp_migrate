@@ -3,8 +3,6 @@
 
 namespace Palasthotel\WordPress\Migrate;
 
-use Console_Table;
-
 if ( ! defined( 'WP_CLI' ) || ! WP_CLI ) {
 	return;
 }
@@ -34,7 +32,8 @@ class MigrateWPCli {
 	 */
 	public function list(){
 		$migrations = ph_migrate_migrations();
-		$table=new Console_Table();
+		require_once dirname(__FILE__)."/../table.php";
+		$table=new \Console_Table();
 		$table->setHeaders(array('Migration','Imported','Available','Delta'));
 		foreach ( $migrations as $key => $object ) {
 			$table->addRow(array(esc_html($key),intval($object->getNumberOfImportedItems()),intval($object->getNumberOfAvailableItems()),intval($object->getDelta())));
@@ -53,7 +52,7 @@ class MigrateWPCli {
 	 * [--update]
 	 * : reimports already existing items
 	 *
-	 * [--idList=<ID,ID,ID...>]
+	 * [--id-list=<int>]
 	 * : imports only the given source ids
 	 *
 	 * [--limit=<int>]
