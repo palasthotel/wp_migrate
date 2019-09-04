@@ -52,8 +52,8 @@ class MigrateWPCli {
 	 * [--update]
 	 * : reimports already existing items
 	 *
-	 * [--id-list=<ID,ID,ID...>]
-	 * : imports only the given source ids
+	 * [--id-list=<int>]
+	 * : imports only the given source ids (coma separated ids)
 	 *
 	 * [--limit=<int>]
 	 * : stop after processing specified number of items
@@ -98,8 +98,8 @@ class MigrateWPCli {
 	 *
 	 * ## OPTIONS
 	 *
-	 * [--id-list=<ID,ID,ID...>]
-	 * : imports only the given source ids
+	 * [--id-list=<int>]
+	 * : imports only the given source ids (coma separated ids)
 	 *
 	 * [--progress=<int>]
 	 * : render progress after specified number of items

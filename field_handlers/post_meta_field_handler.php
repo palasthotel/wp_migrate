@@ -15,14 +15,28 @@ function ph_migrate_post_meta_handler($post, $fields)
 		$prop = substr( $key, strlen( 'meta:' ) );
 		$metas[ $prop ] = $value;
 	}
+
 	foreach ( $metas as $key => $value ) {
+
+		// so we can handle post meta arrays
+		if(!is_array($value)){
+			$value = array($value);
+		}
+
 		if (is_array($post)) {
-			delete_post_meta( $post['ID'], $key );
-			add_post_meta( $post['ID'], $key, $value, true );
+			// Sometimes we get an assoc array
+			$post_id = $post['ID'];
 		} else {
 			// Sometimes we get an WP_Post object
-			delete_post_meta( $post->ID, $key );
-			add_post_meta( $post->ID, $key, $value, true );
+			$post_id = $post->ID;
+		}
+
+		// cleanup first
+		delete_post_meta( $post_id, $key );
+
+		// than add metas
+		foreach ($value as $v){
+			add_post_meta( $post_id, $key, $v );
 		}
 	}
 }
