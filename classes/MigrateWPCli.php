@@ -52,7 +52,7 @@ class MigrateWPCli {
 	 * [--update]
 	 * : reimports already existing items
 	 *
-	 * [--id-list=<int>]
+	 * [--id-list=<ID,ID,ID...>]
 	 * : imports only the given source ids
 	 *
 	 * [--limit=<int>]
@@ -78,8 +78,8 @@ class MigrateWPCli {
 		$migration = $args[0];
 		$update = isset($assoc_args["update"]);
 		$idlist = array();
-		if(isset($assoc_args["idList"])){
-			$idlist = explode(",", $assoc_args["idList"]);
+		if(isset($assoc_args["id-list"])){
+			$idlist = explode(",", $assoc_args["id-list"]);
 		}
 		$limit = (isset($assoc_args["limit"]))? intval($assoc_args["limit"]) : 0;
 		$skip = (isset($assoc_args["skip"]))? intval($assoc_args["skip"]) : 0;;
@@ -98,7 +98,7 @@ class MigrateWPCli {
 	 *
 	 * ## OPTIONS
 	 *
-	 * [--idList=<ID,ID,ID...>]
+	 * [--id-list=<ID,ID,ID...>]
 	 * : imports only the given source ids
 	 *
 	 * [--progress=<int>]
@@ -117,8 +117,8 @@ class MigrateWPCli {
 		$migration = $args[0];
 		$progress = (isset($assoc_args["progress"]))? intval($assoc_args["progress"]) : -1;
 		$idlist = array();
-		if(isset($assoc_args["idList"])){
-			$idlist = explode(",", $assoc_args["idList"]);
+		if(isset($assoc_args["id-list"])){
+			$idlist = explode(",", $assoc_args["id-list"]);
 		}
 		$log = isset($assoc_args["log"]);
 		ph_migrate_rollback( $migration,$progress,$idlist,$log );
