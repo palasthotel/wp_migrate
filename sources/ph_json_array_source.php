@@ -17,6 +17,8 @@ class ph_json_array_source extends ph_source
 		$this->fields = array();
 	}
 
+
+
 	/**
 	 * @param $item array
 	 * @return mixed
