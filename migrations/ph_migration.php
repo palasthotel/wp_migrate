@@ -75,11 +75,11 @@ class ph_migration
 				$wpdb->update( $wpdb->prefix.'ph_migrate_map_'.$this->name,array( 'source_id' => $source_id, 'dest_id' => $id, 'needs_import' => true ), array( 'source_id' => $source_id ) );
 			}
 			$mapping = null;
-			return $id;
+			return intval($id);
 		}
 		else
 		{
-			return $mapping[$source_id]->dest_id;
+			return intval($mapping[$source_id]->dest_id);
 		}
 	}
 

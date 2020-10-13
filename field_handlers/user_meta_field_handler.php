@@ -10,7 +10,7 @@ add_action( 'ph_migrate_register_field_handlers','ph_migrate_user_meta_handler_r
  * @param $user WP_User
  * @param $fields array
  */
-function ph_migrate_user_meta_handler(WP_User $user, $fields)
+function ph_migrate_user_meta_handler($user, $fields)
 {
 	$metas = array();
 	foreach ( $fields as $key => $value ) {

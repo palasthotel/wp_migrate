@@ -4,9 +4,9 @@ require_once(ABSPATH.'wp-admin/includes/user.php');
 
 class ph_user_destination extends ph_destination
 {
-	
+
 	public $user_fields;
-	
+
 	public function __construct() {
 		$this->user_fields = array(
 			'ID',
@@ -39,14 +39,15 @@ class ph_user_destination extends ph_destination
 
 	/**
 	 * @param $id
-	 * @return \WP_User
+	 * @return object
 	 */
 	public function getItemByID($id)
 	{
-		$user = new WP_User( $id );
+		$user = new StdClass();
+		$user->ID=$id;
 		return $user;
 	}
-	
+
 	/**
 	 * get all field handlers
 	 * @return array
@@ -54,7 +55,7 @@ class ph_user_destination extends ph_destination
 	public function get_field_handlers(){
 		return ph_migrate_get_field_handlers($this);
 	}
-	
+
 	/**
 	 * get process list and save unhandled properties to $user global
 	 * @param $item
@@ -65,7 +66,7 @@ class ph_user_destination extends ph_destination
 	public function get_processes($item, $field_handlers, &$rest){
 		return ph_migrate_get_process($item, $field_handlers, $rest);
 	}
-	
+
 	/**
 	 * save user fields to user
 	 * create user if needed
@@ -94,7 +95,7 @@ class ph_user_destination extends ph_destination
 		}
 		wp_update_user( $item );
 	}
-	
+
 	/**
 	 * save data from field handlers
 	 * @param $item
@@ -107,7 +108,7 @@ class ph_user_destination extends ph_destination
 			$callback($user,$dataset['fields']);
 		}
 	}
-	
+
 	/**
 	 * migration calls this to save migration item
 	 * @param $item
@@ -121,13 +122,13 @@ class ph_user_destination extends ph_destination
 		 * separate all field handler properties from core properties
 		 */
 		$process = $this->get_processes($item, $this->get_field_handlers(), $core_user);
-		
+
 		/**
 		 * save core user data
 		 */
 		$this->save_user_data($core_user);
 		$item->ID = $core_user->ID;
-		
+
 		/**
 		 * save data from field handlers
 		 */

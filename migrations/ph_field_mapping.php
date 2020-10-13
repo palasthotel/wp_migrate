@@ -113,7 +113,7 @@ class ph_field_mapping
 						}
 						if($sourcemigration->source->hasID($src))
 						{
-							$new_values[]=$sourcemigration->getDestinationIDForSourceID($src);
+							$new_values[]=intval($sourcemigration->getDestinationIDForSourceID($src));
 							$found=true;
 							break;
 						}

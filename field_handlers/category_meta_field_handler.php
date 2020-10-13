@@ -2,7 +2,7 @@
 
 function ph_migrate_category_meta_handler_register()
 {
-	ph_migrate_register_field_handler( 'ph_category_destination','meta:','ph_migrate_category_meta_handler' );
+	ph_migrate_register_field_handler( 'ph_term_destination','meta:','ph_migrate_category_meta_handler' );
 }
 add_action( 'ph_migrate_register_field_handlers','ph_migrate_category_meta_handler_register' );
 
