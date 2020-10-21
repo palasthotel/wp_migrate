@@ -33,6 +33,7 @@ require('sources/ph_wpdb_source.php');
 require('sources/ph_xml_source.php');
 require('sources/ph_xml_list_source.php');
 require('sources/ph_placeholder_source.php');
+require('sources/ph_json_source.php');
 require('sources/ph_json_array_source.php');
 require('sources/ph_mongodb_source.php');
 require('sources/ph_mysql_source.php');
